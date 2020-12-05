@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Caren Elhenawy&#39;s Website</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on Caren Elhenawy&#39;s Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Caren - Project 2</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>My data is revolved around the vitals of individuals that could be at risk for heart complications. The dataset contains their age, sex, chest pain level, resting blood pressure, chlorestrol levels, maximum heart rate, and if they have excercise induced angina. There is a total of 7 variables and 58 observations. The categorical variable is the chest pain variable. There are four groups. The individual reports that they either have mild, moderate, severe, or no chest pain.</description>
+    </item>
+    
+    <item>
+      <title>Project 1: Exploratory Data Analysis</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>For this project, I chose to focus on mental health and the resources available in countries worldwide. The first dataset contains the suicide rates of 4 different years from each country. The suicide rates are for both genders combined and are age-standardized. The second dataset contains the amount of mental health specialitists present in the same countries during the year 2016. Each of the values in the second dataset, excluding the year, was per a population of 100000.</description>
+    </item>
+    
+  </channel>
+</rss>

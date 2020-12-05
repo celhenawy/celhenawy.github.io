@@ -1,0 +1,295 @@
+---
+title: "Caren - Project 2"
+author: "Caren Elhenawy"
+date: '12-03-2020'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+My data is revolved around the vitals of individuals that could be at risk for heart complications. The dataset contains their age, sex, chest pain level, resting blood pressure, chlorestrol levels, maximum heart rate, and if they have excercise induced angina. There is a total of 7 variables and 58 observations. The categorical variable is the chest pain variable. There are four groups. The individual reports that they either have mild, moderate, severe, or no chest pain. There are two binary variables. The binary variables are sex and excercise induced angina. For the sex variable, 1 means male and 0 means female. For the excercise induced angina, 1 means that the patient does excercise induced angina. 0 means that the patient does not have excercise induced angina. Excercise induced angina means that there was a chest pain caused by a reduction of blood flow to the heart after physical activity. The other four variables are numeric.
+
+#Dataset
+```{r}
+ 
+heart <- read.csv("heartdata.csv")
+
+library(tidyr)
+library(ggplot2) 
+library(lmtest)
+library(dplyr)
+library(tidyverse)
+
+```
+
+#Question 1 
+```{r}
+mancp <- manova(cbind(restbp, maxhr)~chestpain, data=heart)
+summary(mancp)
+#Unvariate
+summary.aov(mancp)
+#T-Test
+t_test <- heart%>%group_by(chestpain)%>%summarize(mean(restbp), mean(maxhr))
+t_test
+#Post-Hoc Test
+pairwise.t.test(heart$restbp, heart$chestpain, p.adj="none")
+pairwise.t.test(heart$maxhr, heart$chestpain, p.adj="none")
+#Probability of at least 1 Type One error 
+1-(0.95^5)
+#Bonferroni's Correction
+0.05/5
+
+#Assumptions 
+library(rstatix)
+group <- heart$chestpain 
+DVs <- heart %>% select(restbp,maxhr)
+#Test multivariate normality for each group (null: assumption met)
+sapply(split(DVs,group), mshapiro_test)
+#If any p<.05, stop (assumption violated). If not, test homogeneity of covariance matrices
+#Box's M test (null: assumption met)
+box_m(DVs, group)
+#Optionally, view covariance matrices for each group
+lapply(split(DVs,group), cov)
+```
+
+Findings from Question 1: I ran a MANOVA test to see if my numeric variables had an effect on my categorial variable "chestpain." Initially, I wanted to observe the effect of all my numeric variables on chest pain; however, the MANOVA output produced an insignificant effect. I wanted to see if any combination of my numeric variable produced a significant effect. The combination of resting blood pressure and maximum heart rate produced a significant effect. I then performed a univariate ANOVA test to see which of the variables were causing the significant results. It was the maximum heart rate group that was causing the significant effect. This is not surprising since rapid heart rates are known to cause a discomfort in the chest. In total, I ran 5 tests. The overall Type I error was equal to 0.05, as usual. The probability that at least one Type I error would occur was 0.23. The Bonferroni’s Correction shifted p value from 0.05 to 0.01. After the correction, we can no longer conclude that the effect is significant since the p-value of maximum heart rate was 0.02845 which is larger than the corrected value (0.01.) In regard to the assumptions, when the multivariate normality test was run for each group, all p values were above 0.05 which meant that no assumptions were violated. I continued on to run the Box’s M test where I also received a large p value (larger than 0.05). This means that we cannot reject the null hypothesis and that the observed covariance matrices for the dependent variables are equal across groups.  
+
+#Question 2  
+```{r}
+cor(heart$age,heart$restbp)
+summary(aov(age~restbp,data=heart))
+library(vegan)
+dists<-heart%>%select(age,restbp)%>%dist()
+adonis(dists~chestpain,data=heart)
+SST<- sum(dists^2)/150
+SSW<-heart%>%group_by(chestpain)%>%select(age,restbp)%>%do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%summarize(sum(d[[1]]^2)/50 + 
+sum(d[[2]]^2)/50+ sum(d[[2]]^2)/50)%>%pull
+F_obs <- ((SST-SSW)/3)/(SSW/54)
+
+Fs <- replicate(1000, {
+new <- heart%>%mutate(chestpain= sample(chestpain))
+SSW <- SW<-new%>%group_by(chestpain)%>%select(age,restbp)%>%do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%
+summarize(sum(d[[1]]^2)/50 + sum(d[[2]]^2)/50+ sum(d[[2]]^2)/50)%>%pull 
+((SST-SSW)/3)/(SSW/54)
+})
+{hist(Fs, prob=T);abline(v=F_obs, col="blue", add=T)}
+mean(Fs>F_obs)
+```
+
+Findings from Question 2: For the randomization test, I chose to compare if the age of the patient correlated with their resting blood pressure. I first computed the actual correlation between the variables. The correlation value was 0.307 which signifies that there is a weak, positive correlation between variables. Generally, as age of the patient increases, their resting blood pressure also increases. I then conducted a randomization test and replicated the sample 1000 times to get as much of the randomization effect as possible. The null hypothesis was that age and resting blood pressure are not correlated and both variables act independently of each other. In contrast, the alternative hypothesis was that age indeed affected the resting blood pressure of the patient. The actual mean difference is 0.486 which is large and means that we cannot reject the null hypothesis. The F_obs value was -4.77 and some of the 1000 F statistics that we generated were larger than the F_obs. Therefore, we cannot reject the null hypothesis and can conclude that age has an insignificant effect on the resting blood pressure. In regard to the relative frequency histogram of Fs, it is skewed to the left with a mean about -5. 
+
+#Question 3 
+```{r}
+#Mean Centering Age, Chol, and Maxhr Variables 
+age_c <- heart$age-mean(heart$age, na.rm=T)
+chol_c <- heart$chol-mean(heart$chol, na.rm=T)
+maxhr_c <- heart$maxhr-mean(heart$maxhr, na.rm=T)
+
+fit2 <- lm(maxhr_c~chol_c*age_c, data = heart)
+summary(fit2)
+coeftest(fit2)
+
+#Predicting MaxHr from Chol and Age 
+library(interactions)
+interact_plot(fit2, pred = chol_c, modx = age_c)
+#Linearity, Normality, Homoskedasticity 
+shapiro.test(age_c)
+shapiro.test(chol_c)
+shapiro.test(maxhr_c)
+plot(fit2)
+#Recompute Regression 
+library(sandwich)
+library(lmtest)
+coeftest(fit2,vcov=vcovHC(fit2, family='binomial'(link='logit')))
+#Variation 
+summary(fit2)$r.sq
+```
+
+Findings from Question 3: I chose to predict the maximum heart rate variable from the cholesterol and age variable. First, I centered the three aforementioned variables. The intercept coefficient means that the predicted maximum heart rate for all patients is -0.37 when chol_c and age_c is 0. The coefficient for chol_c means that for every 1 unit increase in chol, there is a 0.067 increase in maximum heart rate. The coefficient for age_c means that for every 1 unit increase in age, the maximum heart rate decreases by a value of -1.16. The coefficient chol_c:age_c means that the effect of chol_c on age_c is greater than the effect of age_c on chol_c. In regard to the regression plot, it shows that the chol_c variable affects the value of maximum heart rate more than the age_c. At greater ages (+1 SD), the decrease in maximum heart rate was steeper than if the ages were at mean value or lower values. Therefore, the chol_c variable has a more significant effect on decreasing maximum heart rate levels. When regression results were recomputed, there were no significant changes. The p-values for the variables and the interaction variables changed but the significance of age_c persisted. In regard to the proportion of variation, my model explains 0.299 of the proportion of the variation of the outcome. 
+
+#Question 4 
+```{r}
+#Rerunning Regression and Bootstrapping 
+boot <- maxhr_c%>%sort+ chol_c%>%sort+ age_c%>%sort 
+summary(boot)
+sd(boot)
+boot%>%mean
+sample1 <- sample(boot, replace=T)
+sort(sample1)
+mean(sample1)
+means<-vector()
+for(i in 1:5000){ samp<-sample(boot,replace=T) 
+means[i]<-mean(samp)
+} 
+quantile(means,c(0.025,0.975))
+ggplot()+geom_histogram(aes(means))+geom_vline(xintercept=quantile(means,c(.025,.975)))
+
+#Bootstrapped SEs
+sd(means)
+ggplot()+geom_histogram(aes(means))+ geom_vline(xintercept=mean(means)+c(-1,1)*sd(means))
+```
+
+Findings for Question 4: When I reran the regression and bootstrapped, the range of the means decreased. As the mean range increased, the standard deviation value decreased. The standard deviation of the sampling distribution, which is equal to the bootstrapped standard error, is 10.03. This is much greater value than the regular and robust standard errors.
+
+#Question 5 
+```{r}
+data1 <-heart%>%mutate(y=ifelse(excangina=="Yes",1,0))
+pred <-glm(excangina~restbp+maxhr,data=data1,family='binomial'(link="logit"))
+coeftest(pred)
+exp(coef(pred))
+#Confusiaon Matrix 
+prob <-predict(pred,type="response")
+pred1<-ifelse(prob>.5,1,0) 
+table(predict=as.numeric(prob>.5), truth=data1$excangina) %>%addmargins
+#Accuracy
+50/58
+#TPR
+50/58
+#TNR
+0/58
+#PPV 
+50/50
+#predicted logit (log-odds)
+predict(pred, newdata=data.frame(restbp=10,maxhr=10), type="link")
+#predicted probability 
+predict(pred, newdata=data.frame(restbp=10,maxhr=10), type="response")
+#ggplot 
+data1$logit<-predict(pred,type="link") 
+data1%>%ggplot(aes(logit,color=excangina,fill=excangina))+
+geom_density(alpha=.4, color="blue", fill="yellow", linetype="dashed")+ 
+geom_vline(xintercept=0)+xlab("logit")+theme(legend.position=c(.85,.85))
+#ROC Plot
+library(plotROC)
+ROCplot<-ggplot(data1)+geom_roc(aes(d=excangina, m=prob), n.cuts=0) 
+ROCplot
+
+#AUC Calculation
+calc_auc(ROCplot)
+```
+
+Findings for Question 5: From the coefficient estimates, we can conclude that resting blood pressure and maximum heart rate do not have a significant effect on whether a patient does or does not have angina due to exercise. When controlling for maximum heart rate, for every 1 unit increase in resting blood pressure, the odds for having angina due to exercise decreases by a factor of 0.036. When controlling for resting blood pressure, for every 1 unit increase in maximum heart rate, the odds for having angina due to exercise decreases by a factor of 0.02. Based on these two values, we can conclude that resting blood pressure has a larger effect on whether a patient has angina in comparison to maximum heart rate; however, none of the variables effects are strong enough to be considered significant. Referencing to methods on the class slides, accuracy (0.862), sensitivity (0.862), specificity (0), and precision (1) was calculated.  A ROC plot was then generated, and an AUC value was calculated. Based on the AUC value, the area under the curve is equal to 0.619. 
+
+#Question 6 
+```{r}
+#Fit model, compute in-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, AUC), and interpret (5)
+finalfit <- glm(excangina~age+sex+chestpain+restbp+chol+maxhr, data = heart, family = binomial(link = "logit"))
+coeftest(finalfit)
+probs <- predict(finalfit,type = "response")
+table(predict=as.numeric(probs>.5), truth=heart$excangina)%>%addmargins
+#Accuracy
+(50+4)/58
+#TPR
+50/54
+#TNR
+4/4
+#PPV 
+50/50
+#ROC Plot
+library(plotROC)
+ROCplot<-ggplot(data1)+geom_roc(aes(d=excangina, m=probs), n.cuts=0) 
+ROCplot
+#AUC Calculation
+calc_auc(ROCplot)
+
+#Perform 10-fold (or repeated random sub-sampling) CV with the same model and report average out-of-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, and AUC); interpret AUC and compare with the in-sample metrics (10)
+
+## GIVE IT PREDICTED PROBS AND TRUTH LABELS (0/1), RETURNS VARIOUS DIAGNOSTICS
+
+class_diag <- function(probs,truth){
+#CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV
+if(is.character(truth)==TRUE) truth<-as.factor(truth)
+if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),factor(truth, levels=c(0,1)))
+acc=sum(diag(tab))/sum(tab)
+sens=tab[2,2]/colSums(tab)[2]
+spec=tab[1,1]/colSums(tab)[1]
+ppv=tab[2,2]/rowSums(tab)[2]
+f1=2*(sens*ppv)/(sens+ppv)
+
+#CALCULATE EXACT AUC
+ord<-order(probs, decreasing=TRUE)
+probs <- probs[ord]; truth <- truth[ord]
+TPR=cumsum(truth)/max(1,sum(truth)) 
+FPR=cumsum(!truth)/max(1,sum(!truth))
+dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+n <- length(TPR)
+auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+data.frame(acc,sens,spec,ppv,f1,auc)
+}
+
+#Ten-Fold
+set.seed(1234)
+k=10
+data2<-heart[sample(nrow(heart)),] 
+folds<-cut(seq(1:nrow(heart)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+  train<-data2[folds!=i,]
+  test<-data2[folds==i,]
+  truth<-test$excangina
+  fitt1<-glm(excangina~age+sex+chestpain+restbp+chol+maxhr,data=train,family="binomial")
+  probs<-predict(fitt1,newdata = test,type="response") 
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+
+
+#Perform LASSO on the same model/variables. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., `lambda.1se`). Discuss which variables are retained. (5)
+
+#LASSO
+library(glmnet)
+y<-as.matrix(heart$excangina) #grab response
+x<-model.matrix(excangina~age+sex+chestpain+restbp+chol+maxhr,data=data2)[,-1] #grab predictors
+x <- scale(x)
+head(x)
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.min)
+coef(lasso)
+
+#Perform 10-fold CV using only the variables lasso selected: compare model's out-of-sample AUC to that of your logistic regressions above (5)
+
+set.seed(1234)
+k=10
+data3<-heart[sample(nrow(heart)),] 
+folds1<-cut(seq(1:nrow(data3)),breaks=k,n=10)
+diags1<-NULL
+for(i in 1:k){
+  train1<-data3[folds!=i,]
+  test1<-data3[folds==i,]
+  truth1<-test1$excangina
+  fitt3<-glm(excangina~age, data = train1,family="binomial") 
+  probs<-predict(fitt3,newdata = test1,type="response") 
+  diags1<-rbind(diags1,class_diag(probs,truth1))
+}
+diags1%>%summarize_all(mean)
+```
+
+Findings for Question 6: For this question, I performed a logistic regression where I predicted the same binary variable (excangina) from the rest of my variables. My in-sample classification diagnostics are as follows: accuracy had a value of 0.931 ,sensitivity had a value of 0.926, specificity had a value of 1, and precision had a value of 1. Based on the AUC value, the area under the curve is equal to 0.785. I then performed a 10-Fold where I retrieved an accuracy value of 0.85, sensitivity value of NaN, specificity value of 0.963, precision value of NaN, and AUC value of 0.54. Excluding the specificity value, all the others value changed drastically after the 10-Fold was computed. The evident decrease in the diagnostic values led to a significant decrease in the AUC value.I then ran a LASSO regression which indicated that the variable most affecting excangina is age. The age variable was still being retained at a very small coefficient estimate. A 10-Fold was again performed using only the variables that LASSO selected. The only variable, as mentioned, was age. The out-of-sample AUC value was 0.48 which is significantly smaller than the in-sample AUC value. of 0.785 In comparison to the first 10-Fold, the AUC value decreased from 0.54 to 0.48 and the specificity value increased from 0.963 to 1. The accuracy value increased slightly and the sensitivity and precision value remained NaN.
+
+
+```{recho=FALSE}
+
+```
+
+
