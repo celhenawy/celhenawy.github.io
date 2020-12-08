@@ -60,7 +60,7 @@
  
 <div class="blog-title">
           <h4>
-         January 1, 0001 
+         December 3, 2020 
             &nbsp;&nbsp;
             
           </h4>
@@ -214,7 +214,7 @@ adonis(dists~chestpain,data=heart)</code></pre>
 ## Terms added sequentially (first to last)
 ## 
 ##           Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)
-## chestpain  3    1170.2  390.08  1.4571 0.07489  0.202
+## chestpain  3    1170.2  390.08  1.4571 0.07489  0.203
 ## Residuals 54   14456.8  267.72         0.92511       
 ## Total     57   15627.0                 1.00000</code></pre>
 <pre class="r"><code>SST&lt;- sum(dists^2)/150
@@ -231,7 +231,7 @@ summarize(sum(d[[1]]^2)/50 + sum(d[[2]]^2)/50+ sum(d[[2]]^2)/50)%&gt;%pull
 {hist(Fs, prob=T);abline(v=F_obs, col=&quot;blue&quot;, add=T)}</code></pre>
 <p><img src="../../project/project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>mean(Fs&gt;F_obs)</code></pre>
-<pre><code>## [1] 0.471</code></pre>
+<pre><code>## [1] 0.494</code></pre>
 <p>Findings from Question 2: For the randomization test, I chose to compare if the age of the patient correlated with their resting blood pressure. I first computed the actual correlation between the variables. The correlation value was 0.307 which signifies that there is a weak, positive correlation between variables. Generally, as age of the patient increases, their resting blood pressure also increases. I then conducted a randomization test and replicated the sample 1000 times to get as much of the randomization effect as possible. The null hypothesis was that age and resting blood pressure are not correlated and both variables act independently of each other. In contrast, the alternative hypothesis was that age indeed affected the resting blood pressure of the patient. The actual mean difference is 0.486 which is large and means that we cannot reject the null hypothesis. The F_obs value was -4.77 and some of the 1000 F statistics that we generated were larger than the F_obs. Therefore, we cannot reject the null hypothesis and can conclude that age has an insignificant effect on the resting blood pressure. In regard to the relative frequency histogram of Fs, it is skewed to the left with a mean about -5.</p>
 </div>
 <div id="question-3" class="section level1">
@@ -334,35 +334,35 @@ summary(boot)</code></pre>
 <pre><code>## [1] -6.39766e-15</code></pre>
 <pre class="r"><code>sample1 &lt;- sample(boot, replace=T)
 sort(sample1)</code></pre>
-<pre><code>## [1] -166.758621 -136.758621 -120.758621 -103.758621
--85.758621 -74.758621 -74.758621 -72.758621
-## [9] -72.758621 -71.758621 -67.758621 -62.758621
--62.758621 -57.758621 -48.758621 -43.758621
-## [17] -40.758621 -40.758621 -40.758621 -40.758621
--40.758621 -35.758621 -35.758621 -28.758621
-## [25] -28.758621 -18.758621 -14.758621 -14.758621
--10.758621 -4.758621 5.241379 10.241379
-## [33] 29.241379 29.241379 33.241379 37.241379 37.241379
-37.241379 37.241379 37.241379
-## [41] 41.241379 41.241379 41.241379 41.241379 46.241379
-46.241379 46.241379 51.241379
-## [49] 84.241379 84.241379 85.241379 89.241379 94.241379
-107.241379 113.241379 113.241379
-## [57] 132.241379 217.241379</code></pre>
+<pre><code>## [1] -166.758621 -120.758621 -120.758621 -115.758621
+-103.758621 -85.758621 -78.758621 -72.758621
+## [9] -72.758621 -71.758621 -67.758621 -57.758621
+-48.758621 -48.758621 -40.758621 -40.758621
+## [17] -40.758621 -35.758621 -20.758621 -20.758621
+-20.758621 -20.758621 -15.758621 -12.758621
+## [25] -10.758621 -10.758621 -9.758621 -9.758621 -5.758621
+-4.758621 -4.758621 2.241379
+## [33] 10.241379 17.241379 17.241379 23.241379 23.241379
+26.241379 29.241379 33.241379
+## [41] 33.241379 33.241379 35.241379 37.241379 41.241379
+41.241379 51.241379 76.241379
+## [49] 76.241379 76.241379 84.241379 85.241379 89.241379
+132.241379 132.241379 157.241379
+## [57] 217.241379 217.241379</code></pre>
 <pre class="r"><code>mean(sample1)</code></pre>
-<pre><code>## [1] 0.8275862</code></pre>
+<pre><code>## [1] 4.137931</code></pre>
 <pre class="r"><code>means&lt;-vector()
 for(i in 1:5000){ samp&lt;-sample(boot,replace=T) 
 means[i]&lt;-mean(samp)
 } 
 quantile(means,c(0.025,0.975))</code></pre>
 <pre><code>##      2.5%     97.5% 
-## -19.31034  19.05216</code></pre>
+## -19.69052  20.00086</code></pre>
 <pre class="r"><code>ggplot()+geom_histogram(aes(means))+geom_vline(xintercept=quantile(means,c(.025,.975)))</code></pre>
 <p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>#Bootstrapped SEs
 sd(means)</code></pre>
-<pre><code>## [1] 9.925148</code></pre>
+<pre><code>## [1] 10.12139</code></pre>
 <pre class="r"><code>ggplot()+geom_histogram(aes(means))+ geom_vline(xintercept=mean(means)+c(-1,1)*sd(means))</code></pre>
 <p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-2.png" width="768" style="display: block; margin: auto;" /></p>
 <p>Findings for Question 4: When I reran the regression and bootstrapped, the range of the means decreased. As the mean range increased, the standard deviation value decreased. The standard deviation of the sampling distribution, which is equal to the bootstrapped standard error, is 10.03. This is much greater value than the regular and robust standard errors.</p>

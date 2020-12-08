@@ -69,20 +69,24 @@
         <div class="panel panel-default">
           <div class="panel-body">
             <div class="blogpost">
-              <p><img src="../../../../../2020-12-03-python-blog-post/index_files/reticulated_python.png" alt=""></p>
-<p>You ever wish you had the best of both worlds? Well now you cam with reticulate! R Studio and Python are both excellent softwares and often concieved as rivals. If you ask anyone in the data science field, they either say they are Team R Studio or Team Python. Why can&rsquo;t they be Team Both? With reticulate, now you can! If those in Team R Studio are unfamilar with Python, Python can pretty much complete the same tasks as R Studio. Here are some comparison in codes that would be inputted in both softwares to complete the the same tasks:</p>
+              <pre><code class="language-{r" data-lang="{r">knitr::opts_chunk$set(echo = TRUE)
+</code></pre><p>You ever wish you had the best of both worlds? Well now you cam with reticulate! R Studio and Python are both excellent softwares and often concieved as rivals. If you ask anyone in the data science field, they either say they are Team R Studio or Team Python. Why can&rsquo;t they be Team Both? With reticulate, now you can! If those in Team R Studio are unfamilar with Python, Python can pretty much complete the same tasks as R Studio. Here are some comparison in codes that would be inputted in both softwares to complete the the same tasks:</p>
 <p>Let&rsquo;s first input the dataset used in Project 2!</p>
-<pre><code class="language-{r" data-lang="{r">knitr::opts_chunk$set(echo = TRUE)
-</code></pre><p>R:</p>
-<pre><code class="language-{R}" data-lang="{R}">df &lt;- read.csv(&quot;heartdata.csv&quot;)
+<p>R:</p>
+<pre><code class="language-{R}" data-lang="{R}">library(reticulate)
+Sys.setenv(RETICULATE_PYTHON=&quot;usr/bin/python&quot;)
+use_python(&quot;usr/bin/python&quot;)
+df &lt;- read.csv(&quot;heartdata.csv&quot;)
 head(df)
-</code></pre><pre><code class="language-{python}" data-lang="{python}">import pandas as pd
+</code></pre><pre><code class="language-{python3}" data-lang="{python3}">py_install(&quot;pandas&quot;)
+import numpy as np
+import pandas as pd
 df = pd.read_csv(&quot;heartdata.csv&quot;)
 df.head()
 </code></pre><p>As you can see, so far, the codes for the same function are similar. Let&rsquo;s find the 5 number summary for the resting blood pressure varibale on each software!</p>
 <p>R:</p>
 <pre><code class="language-{R}" data-lang="{R}">summary(df$restbp)
-</code></pre><pre><code class="language-{python}" data-lang="{python}">df.restbp.mean
+</code></pre><pre><code class="language-{python3}" data-lang="{python3}">df.restbp.mean
 df.restbp.median
 df.restbp.min
 df.restbp.max
@@ -91,10 +95,9 @@ df.restbp.max
 combined together, data scientists can conquer anything!
 Let me show you how to use the function reticulate which allows both softwares to communicate with one another.</p>
 <p>First let&rsquo;s download reticulate and make a fun saying. I will use both softwares to show you that reticulate actually works!</p>
-<pre><code class="language-{R}" data-lang="{R}">install.packages(&quot;reticulate&quot;)
-library(reticulate)
+<pre><code class="language-{R}" data-lang="{R}">library(reticulate)
 austin &lt;- &quot;Happy&quot;
-</code></pre><pre><code class="language-{python}" data-lang="{python}">austin=&quot;Holidays!&quot;
+</code></pre><pre><code class="language-{python3}" data-lang="{python3}">austin=&quot;Holidays!&quot;
 print(r.austin,austin)
 </code></pre><pre><code class="language-{R}" data-lang="{R}">cat(c(austin,py$austin))
 </code></pre><p>There you go! Communication! The softwares even communicate so well that we different words can be named the same thing without any issue!</p>
