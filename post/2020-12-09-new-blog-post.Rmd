@@ -1,0 +1,74 @@
+---
+title: Best of Both Worlds, huh? 
+author: ''
+date: '2020-12-09'
+slug: new-blog-post
+categories: []
+tags: []
+description: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+You ever wish you had the best of both worlds? Well now you cam with reticulate! R Studio and Python are both excellent softwares and often concieved as rivals. If you ask anyone in the data science field, they either say they are Team R Studio or Team Python. Why can't they be Team Both? With reticulate, now you can! If those in Team R Studio are unfamilar with Python, Python can pretty much complete the same tasks as R Studio. Here are some comparison in codes that would be inputted in both softwares to complete the the same tasks: 
+
+Let's first input the dataset used in Project 2! 
+
+
+R:
+
+```{R}
+library(reticulate)
+df <- read.csv("heartdata.csv")
+head(df)
+```
+
+```{python}
+import numpy as np
+import pandas as pd
+df = pd.read_csv("heartdata.csv")
+df.head()
+```
+
+As you can see, so far, the codes for the same function are similar. Let's find the 5 number summary for the resting blood pressure varibale on each software! 
+
+R:
+```{R}
+summary(df$restbp)
+```
+
+
+```{python}
+df.restbp.mean()
+df.restbp.median()
+df.restbp.min()
+df.restbp.max()
+```
+
+As you can see, both codes were straightforward and we obtained the same answers. 
+
+Even though they can complete similar tasks, as shown below, each software has their own benefits. When 
+combined together, data scientists can conquer anything! 
+Let me show you how to use the function reticulate which allows both softwares to communicate with one another. 
+
+First let's download reticulate and make a fun saying. I will use both softwares to show you that reticulate actually works! 
+
+```{r}
+library(reticulate)
+austin <- "Happy"
+```
+
+```{python}
+austin="Holidays!"
+print(austin)
+```
+
+```{python}
+print(r.austin,austin)
+```
+
+<center>
+![](/img/happyh.jpg)
+</center>
